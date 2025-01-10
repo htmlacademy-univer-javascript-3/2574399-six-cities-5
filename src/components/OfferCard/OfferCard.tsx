@@ -1,5 +1,3 @@
-// src/components/OfferCard/OfferCard.tsx
-
 import React from 'react';
 
 const OfferCard: React.FC = () => (
