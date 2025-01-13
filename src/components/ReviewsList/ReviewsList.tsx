@@ -1,16 +1,15 @@
 import React from 'react';
-
-type User = {
-  id: string;
-  name: string;
-  avatarUrl: string;
-  isPro: boolean;
-};
+import Review from '../Review/Review';
 
 type Review = {
   id: string;
   offerId: string;
-  user: User;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+    isPro: boolean;
+  };
   rating: number;
   comment: string;
   date: string;
@@ -21,41 +20,16 @@ type ReviewsListProps = {
 };
 
 const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => (
-  <ul className="reviews__list">
-    {reviews.map((review) => (
-      <li key={review.id} className="reviews__item">
-        <div className="reviews__user user">
-          <div className="reviews__avatar-wrapper user__avatar-wrapper">
-            <img
-              className="reviews__avatar user__avatar"
-              src={review.user.avatarUrl}
-              alt={review.user.name}
-              width="54"
-              height="54"
-            />
-          </div>
-          <span className="reviews__user-name">{review.user.name}</span>
-          {review.user.isPro && <span className="reviews__user-status">Pro</span>}
-        </div>
-        <div className="reviews__info">
-          <div className="reviews__rating rating">
-            <div className="reviews__stars rating__stars">
-              <span style={{ width: `${review.rating * 20}%` }}></span>
-              <span className="visually-hidden">Rating</span>
-            </div>
-          </div>
-          <p className="reviews__text">{review.comment}</p>
-          <time className="reviews__time" dateTime={new Date(review.date).toISOString()}>
-            {new Date(review.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </time>
-        </div>
-      </li>
-    ))}
-  </ul>
+  <section className="reviews">
+    <h2 className="reviews__title">
+      Reviews · <span className="reviews__amount">{reviews.length}</span>
+    </h2>
+    <ul className="reviews__list">
+      {reviews.map((review) => (
+        <Review key={review.id} review={review} />
+      ))}
+    </ul>
+  </section>
 );
 
 export default ReviewsList;

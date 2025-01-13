@@ -37,17 +37,18 @@ type Offer = {
 
 type Coordinates = [number, number];
 
-
 type MainPageProps = {
   offerCount: number;
   offers: Offer[];
+  // Удалён неиспользуемый пропс `reviews`
 };
-
 
 const MainPage: React.FC<MainPageProps> = ({ offerCount, offers }) => {
   const amsterdamOffers = offers.filter((offer) => offer.city.name === 'Amsterdam');
   const cityCenter = amsterdamOffers[0]?.city.location || { latitude: 52.38333, longitude: 4.9, zoom: 12 };
-  const markers: Coordinates[] = amsterdamOffers.filter((offer) => offer.location && offer.location.latitude !== undefined && offer.location.longitude !== undefined).map((offer) => [offer.location.latitude, offer.location.longitude] as Coordinates);
+  const markers: Coordinates[] = amsterdamOffers.map(
+    (offer) => [offer.location.latitude, offer.location.longitude] as Coordinates
+  );
 
   return (
     <div className="page page--gray page--main">
