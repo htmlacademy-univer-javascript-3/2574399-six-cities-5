@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import OfferCard from '../OfferCard/OfferCard';
 
 type Offer = {
@@ -14,35 +14,33 @@ type Offer = {
 
 type OffersListProps = {
   offers: Offer[];
+  onOfferHover?: (id: string | null) => void; // Функция для обработки наведения
 };
 
-const OffersList: React.FC<OffersListProps> = ({ offers }) => {
-  const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
-
+const OffersList: React.FC<OffersListProps> = ({ offers, onOfferHover }) => {
   const handleMouseEnter = (id: string) => {
-    setActiveOfferId(id);
+    if (onOfferHover) {
+      onOfferHover(id);
+    }
   };
 
   const handleMouseLeave = () => {
-    setActiveOfferId(null);
+    if (onOfferHover) {
+      onOfferHover(null);
+    }
   };
 
   return (
     <div className="cities__places-list places__list tabs__content">
-      {offers.length > 0 ? (
-        offers.map((offer) => (
-          <div
-            key={offer.id}
-            onMouseEnter={() => handleMouseEnter(offer.id)}
-            onMouseLeave={handleMouseLeave}
-            className={offer.id === activeOfferId ? 'place-card active' : 'place-card'}
-          >
-            <OfferCard {...offer} />
-          </div>
-        ))
-      ) : (
-        <p>No offers available</p>
-      )}
+      {offers.map((offer) => (
+        <div
+          key={offer.id}
+          onMouseEnter={() => handleMouseEnter(offer.id)}
+          onMouseLeave={handleMouseLeave}
+        >
+          <OfferCard {...offer} />
+        </div>
+      ))}
     </div>
   );
 };

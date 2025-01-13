@@ -1,64 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import CitiesList from '../CitiesList/CitiesList';
 import OffersList from '../OffersList/OffersList';
 import Map from '../Map/Map';
+import SortOptions from '../SortOptions/SortOptions';
+import { selectFilteredOffers, selectCity } from '../../store/reducer';
 
-type Offer = {
-  id: string;
-  title: string;
-  price: number;
-  rating: number;
-  type: string;
-  isPremium: boolean;
-  isFavorite: boolean;
-  images: string[];
-  description: string;
-  bedrooms: number;
-  maxAdults: number;
-  goods: string[];
-  host: {
-    name: string;
-    isPro: boolean;
-    avatarUrl: string;
-  };
-  location: {
-    latitude: number;
-    longitude: number;
-    zoom: number;
-  };
-  city: {
-    name: string;
-    location: {
-      latitude: number;
-      longitude: number;
-      zoom: number;
-    };
-  };
-};
+type SortOption = 'Popular' | 'Price: low to high' | 'Price: high to low' | 'Top rated first';
 
-type Review = {
-  id: string;
-  offerId: string;
-  user: {
-    id: string;
-    name: string;
-    avatarUrl: string;
-    isPro: boolean;
-  };
-  rating: number;
-  comment: string;
-  date: string;
-};
+const MainPage: React.FC = () => {
+  const [currentSort, setCurrentSort] = useState<SortOption>('Popular');
+  const [activeOffer, setActiveOffer] = useState<string | null>(null); // Добавлено состояние для активного предложения
 
-type MainPageProps = {
-  offerCount: number;
-  offers: Offer[];
-  reviews: Review[]; // Добавлено reviews
-};
+  const offers = useSelector(selectFilteredOffers); // Получение предложений по выбранному городу
+  const city = useSelector(selectCity); // Текущий выбранный город
 
-const MainPage: React.FC<MainPageProps> = ({ offerCount, offers, reviews }) => {
-  const amsterdamOffers = offers.filter((offer) => offer.city.name === 'Amsterdam');
-  const cityCenter = amsterdamOffers[0]?.city.location || { latitude: 52.38333, longitude: 4.9, zoom: 12 };
-  const markers = amsterdamOffers.map((offer) => [offer.location.latitude, offer.location.longitude]);
+  // Сортировка предложений в зависимости от выбранного варианта
+  const sortedOffers = [...offers].sort((a, b) => {
+    switch (currentSort) {
+      case 'Price: low to high':
+        return a.price - b.price;
+      case 'Price: high to low':
+        return b.price - a.price;
+      case 'Top rated first':
+        return b.rating - a.rating;
+      default:
+        return 0; // Popular (исходный порядок)
+    }
+  });
+
+  // Центр города для отображения карты
+  const cityCenter = sortedOffers[0]?.city.location || { latitude: 52.38333, longitude: 4.9, zoom: 12 };
+  const markers = sortedOffers.map((offer) => [offer.location.latitude, offer.location.longitude]);
 
   return (
     <div className="page page--gray page--main">
@@ -66,32 +39,10 @@ const MainPage: React.FC<MainPageProps> = ({ offerCount, offers, reviews }) => {
         <div className="container">
           <div className="header__wrapper">
             <div className="header__left">
-              <a className="header__logo-link header__logo-link--active">
-                <img
-                  className="header__logo"
-                  src="img/logo.svg"
-                  alt="6 cities logo"
-                  width="81"
-                  height="41"
-                />
+              <a className="header__logo-link header__logo-link--active" href="/">
+                <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41" />
               </a>
             </div>
-            <nav className="header__nav">
-              <ul className="header__nav-list">
-                <li className="header__nav-item user">
-                  <a className="header__nav-link header__nav-link--profile" href="#">
-                    <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">3</span>
-                  </a>
-                </li>
-                <li className="header__nav-item">
-                  <a className="header__nav-link" href="#">
-                    <span className="header__signout">Sign out</span>
-                  </a>
-                </li>
-              </ul>
-            </nav>
           </div>
         </div>
       </header>
@@ -100,46 +51,18 @@ const MainPage: React.FC<MainPageProps> = ({ offerCount, offers, reviews }) => {
         <h1 className="visually-hidden">Cities</h1>
         <div className="tabs">
           <section className="locations container">
-            <ul className="locations__list tabs__list">
-              <li className="locations__item">
-                <a className="locations__item-link tabs__item" href="#">
-                  <span>Paris</span>
-                </a>
-              </li>
-              <li className="locations__item">
-                <a className="locations__item-link tabs__item" href="#">
-                  <span>Cologne</span>
-                </a>
-              </li>
-              <li className="locations__item">
-                <a className="locations__item-link tabs__item" href="#">
-                  <span>Brussels</span>
-                </a>
-              </li>
-              <li className="locations__item">
-                <a className="locations__item-link tabs__item tabs__item--active" href="#">
-                  <span>Amsterdam</span>
-                </a>
-              </li>
-              <li className="locations__item">
-                <a className="locations__item-link tabs__item" href="#">
-                  <span>Hamburg</span>
-                </a>
-              </li>
-              <li className="locations__item">
-                <a className="locations__item-link tabs__item" href="#">
-                  <span>Dusseldorf</span>
-                </a>
-              </li>
-            </ul>
+            <CitiesList /> {/* Список городов */}
           </section>
         </div>
         <div className="cities">
           <div className="cities__places-container container">
             <section className="cities__places places">
               <h2 className="visually-hidden">Places</h2>
-              <b className="places__found">{offerCount} places to stay in Amsterdam</b>
-              <OffersList offers={amsterdamOffers} />
+              <b className="places__found">
+                {sortedOffers.length} places to stay in {city}
+              </b>
+              <SortOptions currentSort={currentSort} onSortChange={setCurrentSort} /> {/* Варианты сортировки */}
+              <OffersList offers={sortedOffers} onOfferHover={setActiveOffer} /> {/* Список предложений */}
             </section>
             <div className="cities__right-section">
               <section className="cities__map map">
@@ -147,6 +70,11 @@ const MainPage: React.FC<MainPageProps> = ({ offerCount, offers, reviews }) => {
                   center={[cityCenter.latitude, cityCenter.longitude]}
                   zoom={cityCenter.zoom}
                   markers={markers}
+                  activeMarker={
+                    activeOffer
+                      ? markers.find((marker, index) => sortedOffers[index].id === activeOffer)
+                      : null
+                  }
                 />
               </section>
             </div>
