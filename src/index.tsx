@@ -7,8 +7,9 @@ import FavoritesPage from './components/FavoritesPage/FavoritesPage';
 import OfferPage from './components/OfferPage/OfferPage';
 import NotFoundPage from './components/NotFoundPage/NotFoundPage';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute';
+import offers from './mocks/offers';
+import reviews from './mocks/reviews';
 
-const offerCount = 312; // Данные для компонента главной страницы
 const isAuthenticated = true; // Пользователь всегда не авторизован (для тестирования)
 
 const root = ReactDOM.createRoot(
@@ -19,7 +20,7 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App offerCount={offerCount} />} />
+        <Route path="/" element={<App offerCount={offers.length} offers={offers} reviews={reviews} />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/favorites"
@@ -29,7 +30,7 @@ root.render(
             </PrivateRoute>
           }
         />
-        <Route path="/offer/:id" element={<OfferPage />} />
+        <Route path="/offer/:id" element={<OfferPage reviews={reviews} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
