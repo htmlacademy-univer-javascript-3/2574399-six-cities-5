@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { fetchOffers } from './thunks/offers';
 
 type Offer = {
   id: string;
@@ -33,42 +34,37 @@ type Offer = {
   };
 };
 
-type InitialState = {
-  city: string;
-  offers: Offer[];
-  activeOffer: string | null; // Для подсветки маркеров
-};
-
-const initialState: InitialState = {
-  city: 'Paris', // Город по умолчанию
-  offers: [], // Список предложений по аренде
-  activeOffer: null, // Активное предложение для подсветки на карте
+const initialState = {
+  offers: [] as Offer[],
+  city: 'Paris',
+  isLoading: false,
+  error: null as string | null,
 };
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    // Изменение текущего города
-    changeCity: (state, action: PayloadAction<string>) => {
+    changeCity(state, action: PayloadAction<string>) {
       state.city = action.payload;
     },
-    // Установка списка предложений
-    setOffers: (state, action: PayloadAction<Offer[]>) => {
-      state.offers = action.payload;
-    },
-    // Установка активного предложения для подсветки маркера
-    setActiveOffer: (state, action: PayloadAction<string | null>) => {
-      state.activeOffer = action.payload;
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchOffers.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOffers.fulfilled, (state, action: PayloadAction<Offer[]>) => {
+        state.isLoading = false;
+        state.offers = action.payload;
+      })
+      .addCase(fetchOffers.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to load offers';
+      });
   },
 });
 
-export const { changeCity, setOffers, setActiveOffer } = appSlice.actions;
-
-export const selectCity = (state: { app: InitialState }) => state.app.city;
-export const selectFilteredOffers = (state: { app: InitialState }) =>
-  state.app.offers.filter((offer) => offer.city.name === state.app.city);
-export const selectActiveOffer = (state: { app: InitialState }) => state.app.activeOffer;
-
+export const { changeCity } = appSlice.actions;
 export default appSlice.reducer;
