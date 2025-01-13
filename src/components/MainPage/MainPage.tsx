@@ -1,22 +1,32 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import CitiesList from '../CitiesList/CitiesList';
 import OffersList from '../OffersList/OffersList';
 import Map from '../Map/Map';
+import Spinner from '../Spinner/Spinner';
 import SortOptions from '../SortOptions/SortOptions';
-import { selectFilteredOffers, selectCity } from '../../store/reducer';
-
-type SortOption = 'Popular' | 'Price: low to high' | 'Price: high to low' | 'Top rated first';
+import { fetchOffers } from '../../store/thunks/offers';
+import { RootState } from '../../store';
 
 const MainPage: React.FC = () => {
-  const [currentSort, setCurrentSort] = useState<SortOption>('Popular');
-  const [activeOffer, setActiveOffer] = useState<string | null>(null); // Добавлено состояние для активного предложения
+  const dispatch = useDispatch();
+  const { offers, city, isLoading, error } = useSelector((state: RootState) => state.app);
+  const [currentSort, setCurrentSort] = useState('Popular');
 
-  const offers = useSelector(selectFilteredOffers); // Получение предложений по выбранному городу
-  const city = useSelector(selectCity); // Текущий выбранный город
+  useEffect(() => {
+    dispatch(fetchOffers());
+  }, [dispatch]);
 
-  // Сортировка предложений в зависимости от выбранного варианта
-  const sortedOffers = [...offers].sort((a, b) => {
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return <p className="error">Failed to load offers: {error}</p>;
+  }
+
+  const filteredOffers = offers.filter((offer) => offer.city.name === city);
+  const sortedOffers = [...filteredOffers].sort((a, b) => {
     switch (currentSort) {
       case 'Price: low to high':
         return a.price - b.price;
@@ -25,11 +35,10 @@ const MainPage: React.FC = () => {
       case 'Top rated first':
         return b.rating - a.rating;
       default:
-        return 0; // Popular (исходный порядок)
+        return 0; // Popular
     }
   });
 
-  // Центр города для отображения карты
   const cityCenter = sortedOffers[0]?.city.location || { latitude: 52.38333, longitude: 4.9, zoom: 12 };
   const markers = sortedOffers.map((offer) => [offer.location.latitude, offer.location.longitude]);
 
@@ -51,7 +60,7 @@ const MainPage: React.FC = () => {
         <h1 className="visually-hidden">Cities</h1>
         <div className="tabs">
           <section className="locations container">
-            <CitiesList /> {/* Список городов */}
+            <CitiesList />
           </section>
         </div>
         <div className="cities">
@@ -61,21 +70,12 @@ const MainPage: React.FC = () => {
               <b className="places__found">
                 {sortedOffers.length} places to stay in {city}
               </b>
-              <SortOptions currentSort={currentSort} onSortChange={setCurrentSort} /> {/* Варианты сортировки */}
-              <OffersList offers={sortedOffers} onOfferHover={setActiveOffer} /> {/* Список предложений */}
+              <SortOptions currentSort={currentSort} onSortChange={setCurrentSort} />
+              <OffersList offers={sortedOffers} />
             </section>
             <div className="cities__right-section">
               <section className="cities__map map">
-                <Map
-                  center={[cityCenter.latitude, cityCenter.longitude]}
-                  zoom={cityCenter.zoom}
-                  markers={markers}
-                  activeMarker={
-                    activeOffer
-                      ? markers.find((marker, index) => sortedOffers[index].id === activeOffer)
-                      : null
-                  }
-                />
+                <Map center={[cityCenter.latitude, cityCenter.longitude]} zoom={cityCenter.zoom} markers={markers} />
               </section>
             </div>
           </div>
