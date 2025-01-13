@@ -1,11 +1,60 @@
 import React from 'react';
-import OfferCard from '../OfferCard/OfferCard';
+import OffersList from '../OffersList/OffersList';
+
+type Offer = {
+  id: string;
+  title: string;
+  price: number;
+  rating: number;
+  type: string;
+  isPremium: boolean;
+  isFavorite: boolean;
+  images: string[];
+  description: string;
+  bedrooms: number;
+  maxAdults: number;
+  goods: string[];
+  host: {
+    name: string;
+    isPro: boolean;
+    avatarUrl: string;
+  };
+  location: {
+    latitude: number;
+    longitude: number;
+    zoom: number;
+  };
+  city: {
+    name: string;
+    location: {
+      latitude: number;
+      longitude: number;
+      zoom: number;
+    };
+  };
+};
+
+type Review = {
+  id: string;
+  offerId: string;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+    isPro: boolean;
+  };
+  rating: number;
+  comment: string;
+  date: string;
+};
 
 type MainPageProps = {
   offerCount: number;
+  offers: Offer[];
+  reviews: Review[];
 };
 
-const MainPage: React.FC<MainPageProps> = ({ offerCount }) => (
+const MainPage: React.FC<MainPageProps> = ({ offerCount, offers }) => (
   <div className="page page--gray page--main">
     <header className="header">
       <div className="container">
@@ -84,26 +133,7 @@ const MainPage: React.FC<MainPageProps> = ({ offerCount }) => (
           <section className="cities__places places">
             <h2 className="visually-hidden">Places</h2>
             <b className="places__found">{offerCount} places to stay in Amsterdam</b>
-            <form className="places__sorting" action="#" method="get">
-              <span className="places__sorting-caption">Sort by</span>
-              <span className="places__sorting-type" tabIndex={0}>
-                  Popular
-                <svg className="places__sorting-arrow" width="7" height="4">
-                  <use xlinkHref="#icon-arrow-select"></use>
-                </svg>
-              </span>
-              <ul className="places__options places__options--custom places__options--opened">
-                <li className="places__option places__option--active" tabIndex={0}>Popular</li>
-                <li className="places__option" tabIndex={0}>Price: low to high</li>
-                <li className="places__option" tabIndex={0}>Price: high to low</li>
-                <li className="places__option" tabIndex={0}>Top rated first</li>
-              </ul>
-            </form>
-            <div className="cities__places-list places__list tabs__content">
-              {Array.from({ length: offerCount }, (_, index) => (
-                <OfferCard key={index} />
-              ))}
-            </div>
+            <OffersList offers={offers} />
           </section>
           <div className="cities__right-section">
             <section className="cities__map map"></section>
