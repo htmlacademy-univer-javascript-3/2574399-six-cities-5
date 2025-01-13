@@ -16,11 +16,11 @@ type Review = {
   date: string;
 };
 
-type ReviewListProps = {
+type ReviewsListProps = {
   reviews: Review[];
 };
 
-const ReviewList: React.FC<ReviewListProps> = ({ reviews }) => (
+const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => (
   <ul className="reviews__list">
     {reviews.map((review) => (
       <li key={review.id} className="reviews__item">
@@ -29,9 +29,9 @@ const ReviewList: React.FC<ReviewListProps> = ({ reviews }) => (
             <img
               className="reviews__avatar user__avatar"
               src={review.user.avatarUrl}
+              alt={review.user.name}
               width="54"
               height="54"
-              alt={review.user.name}
             />
           </div>
           <span className="reviews__user-name">{review.user.name}</span>
@@ -58,4 +58,4 @@ const ReviewList: React.FC<ReviewListProps> = ({ reviews }) => (
   </ul>
 );
 
-export default ReviewList;
+export default ReviewsList;

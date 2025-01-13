@@ -29,15 +29,20 @@ const OffersList: React.FC<OffersListProps> = ({ offers }) => {
 
   return (
     <div className="cities__places-list places__list tabs__content">
-      {offers.map((offer) => (
-        <div
-          key={offer.id}
-          onMouseEnter={() => handleMouseEnter(offer.id)}
-          onMouseLeave={handleMouseLeave}
-        >
-          <OfferCard {...offer} />
-        </div>
-      ))}
+      {offers.length > 0 ? (
+        offers.map((offer) => (
+          <div
+            key={offer.id}
+            onMouseEnter={() => handleMouseEnter(offer.id)}
+            onMouseLeave={handleMouseLeave}
+            className={offer.id === activeOfferId ? 'place-card active' : 'place-card'}
+          >
+            <OfferCard {...offer} />
+          </div>
+        ))
+      ) : (
+        <p>No offers available</p>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import ReviewList from '../ReviewList/ReviewList';
+import ReviewList from '../ReviewsList/ReviewsList';
 import CommentForm from '../CommentForm/CommentForm';
 
 type User = {

@@ -34,29 +34,15 @@ type Offer = {
   };
 };
 
-type Review = {
-  id: string;
-  offerId: string;
-  user: {
-    id: string;
-    name: string;
-    avatarUrl: string;
-    isPro: boolean;
-  };
-  rating: number;
-  comment: string;
-  date: string;
-};
 
 type AppProps = {
   offerCount: number;
   offers: Offer[];
-  reviews: Review[];
 };
 
-const App: React.FC<AppProps> = ({ offerCount, offers, reviews }) => (
+const App: React.FC<AppProps> = ({ offerCount, offers }) => (
   <div className="app">
-    <MainPage offerCount={offerCount} offers={offers} reviews={reviews} />
+    <MainPage offerCount={offerCount} offers={offers} />
   </div>
 );
 
