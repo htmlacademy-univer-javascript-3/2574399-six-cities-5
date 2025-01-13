@@ -35,20 +35,30 @@ type Offer = {
   };
 };
 
-type Coordinates = [number, number];
+type Review = {
+  id: string;
+  offerId: string;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+    isPro: boolean;
+  };
+  rating: number;
+  comment: string;
+  date: string;
+};
 
 type MainPageProps = {
   offerCount: number;
   offers: Offer[];
-  // Удалён неиспользуемый пропс `reviews`
+  reviews: Review[]; // Добавлено reviews
 };
 
-const MainPage: React.FC<MainPageProps> = ({ offerCount, offers }) => {
+const MainPage: React.FC<MainPageProps> = ({ offerCount, offers, reviews }) => {
   const amsterdamOffers = offers.filter((offer) => offer.city.name === 'Amsterdam');
   const cityCenter = amsterdamOffers[0]?.city.location || { latitude: 52.38333, longitude: 4.9, zoom: 12 };
-  const markers: Coordinates[] = amsterdamOffers.map(
-    (offer) => [offer.location.latitude, offer.location.longitude] as Coordinates
-  );
+  const markers = amsterdamOffers.map((offer) => [offer.location.latitude, offer.location.longitude]);
 
   return (
     <div className="page page--gray page--main">
