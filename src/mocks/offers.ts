@@ -17,6 +17,15 @@ const offers = [
         zoom: 12,
       },
     },
+    description: 'A beautiful and luxurious studio located in the heart of Amsterdam.',
+    bedrooms: 1,
+    maxAdults: 2,
+    goods: ['Wi-Fi', 'Kitchen', 'Cable TV', 'Washing machine', 'Coffee machine'],
+    host: {
+      name: 'John Doe',
+      isPro: true,
+      avatarUrl: 'img/avatar.jpg',
+    },
   },
   {
     id: '2',
@@ -35,6 +44,15 @@ const offers = [
         longitude: 4.897976,
         zoom: 12,
       },
+    },
+    description: 'A cozy and quiet private room in the heart of Amsterdam.',
+    bedrooms: 1,
+    maxAdults: 1,
+    goods: ['Wi-Fi', 'Heating', 'Washing machine'],
+    host: {
+      name: 'Alice',
+      isPro: false,
+      avatarUrl: 'img/avatar-alice.jpg',
     },
   },
   {
@@ -55,6 +73,15 @@ const offers = [
         zoom: 12,
       },
     },
+    description: 'Modern apartment with a beautiful canal view.',
+    bedrooms: 2,
+    maxAdults: 4,
+    goods: ['Wi-Fi', 'Air conditioning', 'Coffee machine'],
+    host: {
+      name: 'Robert',
+      isPro: true,
+      avatarUrl: 'img/avatar-robert.jpg',
+    },
   },
   {
     id: '4',
@@ -73,6 +100,15 @@ const offers = [
         longitude: 4.897976,
         zoom: 12,
       },
+    },
+    description: 'A spacious apartment with modern amenities.',
+    bedrooms: 3,
+    maxAdults: 6,
+    goods: ['Wi-Fi', 'Kitchen', 'Washing machine', 'Dishwasher'],
+    host: {
+      name: 'Emily',
+      isPro: false,
+      avatarUrl: 'img/avatar-emily.jpg',
     },
   },
 ];
