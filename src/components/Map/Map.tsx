@@ -1,53 +1,71 @@
-import React, { useEffect, useRef } from 'react';
-import L from 'leaflet';
+
+import { useRef, useEffect } from 'react';
+
+import { Icon, Marker, layerGroup } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-type Coordinates = [number, number];
+import useMap from '../../hooks/useMap';
+
+import { City } from '../../types/points';
+import { OfferDescription } from '../../types/offerDescription';
+
+import React from 'react';
 
 type MapProps = {
-  center: Coordinates; // Центр карты
-  zoom: number; // Уровень увеличения карты
-  markers: Coordinates[]; // Координаты всех маркеров
-  activeMarker?: Coordinates | null; // Координаты активного маркера (подсвечивается)
+  city: City;
+  height:number;
+  width:number;
+  offerList:OfferDescription[];
+  selectedOffer:OfferDescription;
 };
 
-const Map: React.FC<MapProps> = ({ center, zoom, markers, activeMarker }) => {
-  const mapRef = useRef<HTMLDivElement>(null);
+const defaultCustomIcon = new Icon({
+  iconUrl: '../../../markup/img/pin.svg',
+  iconSize: [25, 40],
+  iconAnchor: [20, 40]
+});
+
+const currentCustomIcon = new Icon({
+  iconUrl: '../../../markup/img/pin-active.svg',
+  iconSize: [25, 40],
+  iconAnchor: [20, 40]
+});
+
+function Map(props: MapProps): JSX.Element {
+  const {city,height, width, offerList, selectedOffer} = props;
+
+  const mapRef = useRef(null);
+  const map = useMap(mapRef, city);
 
   useEffect(() => {
-    if (mapRef.current) {
-      const map = L.map(mapRef.current, {
-        center,
-        zoom,
-        layers: [
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          }),
-        ],
-      });
+    let isMounted = true;
+    if (isMounted){
+      if (map) {
+        map.setView([city.lat, city.lng], city.zoom);
+        const markerLayer = layerGroup().addTo(map);
+        offerList.forEach((point) => {
+          const marker = new Marker({
+            lat: point.location.latitude,
+            lng: point.location.longitude
+          });
 
-      markers.forEach((marker) => {
-        const iconUrl =
-          activeMarker && marker[0] === activeMarker[0] && marker[1] === activeMarker[1]
-            ? 'img/pin-active.svg'
-            : 'img/pin.svg';
-
-        L.marker(marker, {
-          icon: L.icon({
-            iconUrl,
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-          }),
-        }).addTo(map);
-      });
-
-      return () => {
-        map.remove();
-      };
+          marker
+            .setIcon(
+              selectedOffer !== undefined && point.id === selectedOffer.id
+                ? currentCustomIcon
+                : defaultCustomIcon
+            )
+            .addTo(markerLayer);
+        });
+        return () => {
+          map.removeLayer(markerLayer);
+          isMounted = false;
+        };
+      }
     }
-  }, [center, zoom, markers, activeMarker]);
+  }, [map, offerList, selectedOffer, city.zoom, city.lat, city.lng]);
 
-  return <div ref={mapRef} className="cities__map" style={{ height: '100%' }} />;
-};
+  return <div style={{ height: `${height}px`, width: `${width}px`, margin: '0 auto' }} ref={mapRef} data-testid = 'map-test'></div>;
+}
 
-export default Map;
+export default React.memo(Map);
