@@ -1,30 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { AuthorizationStatus } from '../../mocks/login';
+import CityList from '../CityList/CityList';
+import UserHeaderInfo from '../UserHeaderInfo/UserHeaderInfo';
 
-const NotFoundPage: React.FC = () => (
-  <div className="page page--404">
-    <header className="header">
-      <div className="container">
-        <div className="header__wrapper">
-          <div className="header__left">
-            <Link className="header__logo-link" to="/">
-              <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41" />
-            </Link>
+function NotFoundPage({userEmail, authStatus}:{userEmail:string; authStatus:AuthorizationStatus}):JSX.Element{
+  return(
+    <div className="page page--gray page--main">
+      <UserHeaderInfo userEmail={userEmail} authStatus={authStatus}/>
+      <main className="page__main page__main--index">
+        <h1 className="visually-hidden">Cities</h1>
+        <div className="tabs">
+          <section className="locations container">
+            <CityList/>
+          </section>
+          <h2 style={{ textAlign : 'center'}}>Error 404. Page not found. <Link to = "/"> Back to main page</Link></h2>
+          <div className="cities__right-section">
+            <section className="cities__map map"></section>
           </div>
         </div>
-      </div>
-    </header>
+      </main>
+    </div>
+  );
+}
 
-    <main className="page__main page__main--404">
-      <div className="container">
-        <h1 className="page__title">404 Not Found</h1>
-        <p className="page__description">The page you are looking for does not exist.</p>
-        <Link className="page__link" to="/">
-              Return to main page
-        </Link>
-      </div>
-    </main>
-  </div>
-);
-
-export default NotFoundPage;
+export default React.memo(NotFoundPage);

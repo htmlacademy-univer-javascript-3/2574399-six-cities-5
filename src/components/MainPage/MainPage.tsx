@@ -1,81 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import CitiesList from '../CitiesList/CitiesList';
-import OffersList from '../OffersList/OffersList';
+import { useState, useMemo, useCallback } from 'react';
+import { useAppSelector } from '../../hooks';
+import { useFilter } from '../../hooks/useFilter.ts';
+import { getAuthorizationStatus, getCity, getUserEmail } from '../../store/selectors.ts';
+import { CITIES } from '../../mocks/city.ts';
+import { FILTERS } from '../../mocks/filter';
+import { OfferDescription } from '../../types/offerDescription.ts';
+import OfferList from '../OfferList/OfferList.tsx';
 import Map from '../Map/Map';
-import Spinner from '../Spinner/Spinner';
-import SortOptions from '../SortOptions/SortOptions';
-import { fetchOffers } from '../../store/thunks/offers';
-import { RootState } from '../../store';
+import CityList from '../CityList/CityList.tsx';
+import SortFilter from '../SortFilter/SortFilter.tsx';
+import UserHeaderInfo from '../UserHeaderInfo/UserHeaderInfo.tsx';
 
-const MainPage: React.FC = () => {
-  const dispatch = useDispatch();
-  const { offers, city, isLoading, error } = useSelector((state: RootState) => state.app);
-  const [currentSort, setCurrentSort] = useState('Popular');
+function MainPage({ offerList }: { offerList: OfferDescription[] }): JSX.Element {
 
-  useEffect(() => {
-    dispatch(fetchOffers());
-  }, [dispatch]);
+  const [selectedPoint, setSelectedPoint] = useState<OfferDescription | undefined>(undefined);
+  const [selectedFilter, setFilter] = useState<string>(FILTERS[0]);
+  const cityName = useAppSelector(getCity);
+  const authStatus = useAppSelector(getAuthorizationStatus);
+  const userEmail = useAppSelector(getUserEmail);
+  const sortedOffers = useFilter(offerList, selectedFilter);
 
-  if (isLoading) {
-    return <Spinner />;
-  }
+  const city = useMemo(() => CITIES.filter((c) => c.title === cityName)[0],[cityName]);
+  const offerListMap = useMemo(() => offerList,[offerList]);
+  const selectedOffer = useMemo(() => offerList.filter((i) => i.id === selectedPoint?.id)[0],[selectedPoint, offerList]);
+  const sortedOffersMemo = useMemo(() => sortedOffers, [sortedOffers]);
+  const authStatusMemo = useMemo(() => authStatus, [authStatus]);
+  const userEmailMemo = useMemo(() => userEmail, [userEmail]);
+  const selectedFilterMemo = useMemo(() => selectedFilter,[selectedFilter]);
 
-  if (error) {
-    return <p className="error">Failed to load offers: {error}</p>;
-  }
-
-  const filteredOffers = offers.filter((offer) => offer.city.name === city);
-  const sortedOffers = [...filteredOffers].sort((a, b) => {
-    switch (currentSort) {
-      case 'Price: low to high':
-        return a.price - b.price;
-      case 'Price: high to low':
-        return b.price - a.price;
-      case 'Top rated first':
-        return b.rating - a.rating;
-      default:
-        return 0; // Popular
+  const handleListItemHover = useCallback((listItemId: string) => {
+    const currentPoint = offerList.find((point) => point.id === listItemId);
+    if (currentPoint !== selectedPoint) {
+      setSelectedPoint(currentPoint);
     }
-  });
+  },[offerList, selectedPoint]);
 
-  const cityCenter = sortedOffers[0]?.city.location || { latitude: 52.38333, longitude: 4.9, zoom: 12 };
-  const markers = sortedOffers.map((offer) => [offer.location.latitude, offer.location.longitude]);
+  const handleFilterEnter = useCallback((filter: string) => {
+    if (filter !== selectedFilter) {
+      setFilter(filter);
+    }
+  },[selectedFilter]);
 
-  return (
+  return(
     <div className="page page--gray page--main">
-      <header className="header">
-        <div className="container">
-          <div className="header__wrapper">
-            <div className="header__left">
-              <a className="header__logo-link header__logo-link--active" href="/">
-                <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
+      <UserHeaderInfo authStatus={authStatusMemo} userEmail={userEmailMemo}/>
 
       <main className="page__main page__main--index">
         <h1 className="visually-hidden">Cities</h1>
         <div className="tabs">
-          <section className="locations container">
-            <CitiesList />
+          <section className="locations container" data-testid = 'citylist'>
+            <CityList/>
           </section>
         </div>
         <div className="cities">
           <div className="cities__places-container container">
             <section className="cities__places places">
               <h2 className="visually-hidden">Places</h2>
-              <b className="places__found">
-                {sortedOffers.length} places to stay in {city}
-              </b>
-              <SortOptions currentSort={currentSort} onSortChange={setCurrentSort} />
-              <OffersList offers={sortedOffers} />
+              <b className="places__found">{offerList.filter((i)=> i.city.name === cityName).length} places to stay in {cityName}</b>
+              <form className="places__sorting" action="#" method="get" data-testid = 'filter-form'>
+                <SortFilter filter={selectedFilterMemo} handleFilterEnter={handleFilterEnter} />
+              </form>
+              <div className="cities__places-list places__list tabs__content">
+                <OfferList offer={sortedOffersMemo} onListItemHover={handleListItemHover} isMainPage city={cityName}/>
+              </div>
             </section>
             <div className="cities__right-section">
               <section className="cities__map map">
-                <Map center={[cityCenter.latitude, cityCenter.longitude]} zoom={cityCenter.zoom} markers={markers} />
+                <Map
+                  city={city}
+                  selectedOffer={selectedOffer}
+                  offerList={offerListMap}
+                  height={850}
+                  width={512}
+                />
               </section>
             </div>
           </div>
@@ -83,6 +80,6 @@ const MainPage: React.FC = () => {
       </main>
     </div>
   );
-};
+}
 
-export default MainPage;
+export default (MainPage);
